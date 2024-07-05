@@ -99,15 +99,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function eatDot(x, y) {
         const index = x * cols + y;
-        if (dots[index] && dots[index].parentNode) {
-            dots[index].parentNode.removeChild(dots[index]);
-            dots[index] = null;
+        const cell = mazeContainer.children[index];
+        if (cell && cell.querySelector(".dot")) {
+            cell.removeChild(cell.querySelector(".dot"));
             checkGameWin();
         }
     }
 
     function checkGameWin() {
-        if (dots.every(dot => dot === null)) {
+        if (dots.length === 0) {
             alert("Congratulations! You have cleared the maze!");
             nextLevelButton.click();
         }
