@@ -11,6 +11,7 @@ body {
 #maze-container {
     display: grid;
     gap: 1px;
+    position: relative;
 }
 
 .cell {
@@ -18,20 +19,22 @@ body {
     height: 20px;
     background-color: white;
     border: 1px solid #ccc;
+    position: relative;
 }
 
 .cell.wall {
     background-color: black;
 }
 
-.cell.drawn {
-    background-color: blue;
-}
-
-button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
+.cell .dot {
+    width: 4px;
+    height: 4px;
+    background-color: #333;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .pacman {
@@ -39,4 +42,21 @@ button {
     height: 20px;
     background-color: yellow;
     border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.ghost {
+    width: 20px;
+    height: 20px;
+    background-color: #FF6347;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
 }

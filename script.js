@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let pacmanMode = false;
     let pacman = null;
     let pacmanPosition = { x: 1, y: 1 };
+    let dots = [];
+    let ghosts = [];
 
     function createMaze(rows, cols) {
         mazeContainer.innerHTML = ''; // Clear previous maze
@@ -52,41 +54,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 cell.classList.add("cell");
                 if (grid[i][j] === 1) {
                     cell.classList.add("wall");
+                } else {
+                    const dot = document.createElement("div");
+                    dot.classList.add("dot");
+                    cell.appendChild(dot);
+                    dots.push(dot);
                 }
-                cell.addEventListener("mousedown", () => {
-                    if (!cell.classList.contains("wall")) {
-                        isDrawing = true;
-                        cell.classList.add("drawn");
-                        grid[i][j] = 1; // Mark drawn cell as a wall
-                        checkSolvable();
-                    }
-                });
-                cell.addEventListener("mouseover", () => {
-                    if (isDrawing && !cell.classList.contains("wall")) {
-                        cell.classList.add("drawn");
-                        grid[i][j] = 1; // Mark drawn cell as a wall
-                        checkSolvable();
-                    }
-                });
                 mazeContainer.appendChild(cell);
             }
         }
 
-        document.body.addEventListener("mouseup", () => {
-            isDrawing = false;
-        });
-
         // Set start and end points
         const startCell = mazeContainer.children[1 * cols + 1];
-        const endCell = mazeContainer.children[(rows - 2) * cols + (cols - 2)];
         startCell.style.backgroundColor = "green";
-        endCell.style.backgroundColor = "red";
+        pacmanPosition = { x: 1, y: 1 };
+        updatePacmanPosition();
 
-        // Initialize Pacman
-        pacman = document.createElement("div");
-        pacman.classList.add("pacman");
-        mazeContainer.appendChild(pacman);
-        updatePacmanPosition(pacmanPosition.x, pacmanPosition.y);
+        // Initialize ghosts
+        for (let i = 0; i < 3; i++) {
+            const ghost = document.createElement("div");
+            ghost.classList.add("ghost");
+            mazeContainer.appendChild(ghost);
+            ghosts.push({ x: rows - 2, y: cols - 2 });
+            updateGhostPosition(ghost, ghosts[i]);
+        }
 
         // Check if the maze is solvable
         function checkSolvable() {
@@ -127,9 +118,14 @@ document.addEventListener("DOMContentLoaded", () => {
         checkSolvable();
     }
 
-    function updatePacmanPosition(x, y) {
-        pacman.style.gridRowStart = x + 1;
-        pacman.style.gridColumnStart = y + 1;
+    function updatePacmanPosition() {
+        pacman.style.gridRowStart = pacmanPosition.x + 1;
+        pacman.style.gridColumnStart = pacmanPosition.y + 1;
+    }
+
+    function updateGhostPosition(ghostElement, ghostPosition) {
+        ghostElement.style.gridRowStart = ghostPosition.x + 1;
+        ghostElement.style.gridColumnStart = ghostPosition.y + 1;
     }
 
     function movePacman(dx, dy) {
@@ -138,7 +134,56 @@ document.addEventListener("DOMContentLoaded", () => {
         if (newX >= 0 && newY >= 0 && newX < rows && newY < cols && !mazeContainer.children[newX * cols + newY].classList.contains("wall")) {
             pacmanPosition.x = newX;
             pacmanPosition.y = newY;
-            updatePacmanPosition(newX, newY);
+            updatePacmanPosition();
+            eatDot(newX, newY);
+        }
+    }
+
+    function eatDot(x, y) {
+        const index = x * cols + y;
+        if (dots[index] && dots[index].parentNode) {
+            dots[index].parentNode.removeChild(dots[index]);
+            dots[index] = null;
+            checkGameWin();
+        }
+    }
+
+    function checkGameWin() {
+        if (dots.every(dot => dot === null)) {
+            alert("Congratulations! You have cleared the maze!");
+            nextLevelButton.click();
+        }
+    }
+
+    function moveGhosts() {
+        const directions = [
+            [0, -1], // left
+            [0, 1],  // right
+            [-1, 0], // up
+            [1, 0]   // down
+        ];
+
+        for (let i = 0; i < ghosts.length; i++) {
+            const ghost = ghosts[i];
+            const direction = directions[Math.floor(Math.random() * directions.length)];
+            const newX = ghost.x + direction[0];
+            const newY = ghost.y + direction[1];
+            if (newX >= 0 && newY >= 0 && newX < rows && newY < cols && !mazeContainer.children[newX * cols + newY].classList.contains("wall")) {
+                ghost.x = newX;
+                ghost.y = newY;
+                updateGhostPosition(mazeContainer.children[rows * newX + newY + 1], ghost);
+                checkGhostCollision();
+            }
+        }
+    }
+
+    function checkGhostCollision() {
+        for (let i = 0; i < ghosts.length; i++) {
+            const ghost = ghosts[i];
+            if (ghost.x === pacmanPosition.x && ghost.y === pacmanPosition.y) {
+                alert("Game Over! You were caught by a ghost!");
+                nextLevelButton.click();
+            }
         }
     }
 
@@ -158,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     movePacman(0, 1);
                     break;
             }
+            moveGhosts();
         }
     });
 
@@ -166,10 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Next Level button event listener
     nextLevelButton.addEventListener("click", () => {
-        if ((rows + 2) * 20 + 20 <= window.innerHeight && (cols + 2) * 20 + 20 <= window.innerWidth) {
-            rows += 2; // Increase the number of rows
-            cols += 2; // Increase the number of columns
-        }
+        rows += 2; // Increase the number of rows
+        cols += 2; // Increase the number of columns
         createMaze(rows, cols);
     });
 
