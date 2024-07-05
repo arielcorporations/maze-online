@@ -48,15 +48,3 @@ body {
     transform: translate(-50%, -50%);
     z-index: 1;
 }
-
-.ghost {
-    width: 20px;
-    height: 20px;
-    background-color: #FF6347;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-}
